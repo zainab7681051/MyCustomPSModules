@@ -8,6 +8,8 @@
 
 #>
 
+using namespace System.Collections.Generic
+
 function Start-RemoveFromPath {
   param(
   [string][Alias('p')] $Path, 
@@ -15,56 +17,68 @@ function Start-RemoveFromPath {
   [switch][Alias('au')] $AllUsers
   )
 
-  function addForCurrentUser {
-    $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User") -split ';'
-    
-    if ($currentUserPath -notcontains $pathToAdd) {
-        # Append the new directory to the existing PATH
-        $newUserPath = ($currentUserPath + $pathToAdd) -join ';'
-        
-        [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
-        
-        # update the current session's PATH
-        $env:Path += ";$pathToAdd"
-        Write-Host "Added to user PATH: $pathToAdd"
-    } else {
-        Write-Host "Directory already exists in user PATH."
-    }
+  $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+  $principal = [Security.Principal.WindowsPrincipal] $identity
+  $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
+
+  if (-not ($principal.IsInRole($adminRole))) {
+      return Write-Error "Must run this script as Administrator."
   }
 
-  function addForAllUsers{
-    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-    $principal = [Security.Principal.WindowsPrincipal] $identity
-    $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
+  function RemoveFromPath{
+    param(
+    [string] $PathToRemove,
+    [string] $Target
+    )
 
-    if (-not ($principal.IsInRole($adminRole))) {
-        Write-Error "Must run this script as Administrator to modify the system PATH."
-        exit 1
-    }
-
-    $currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine") -split ';'
+    [List[string]] $envPath = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
     
-    if ($currentSystemPath -notcontains $pathToAdd) {
-        $newSystemPath = ($currentSystemPath + $pathToAdd) -join ';'
-        
-        [Environment]::SetEnvironmentVariable("Path", $newSystemPath, "Machine")
-        
-        $env:Path += ";$pathToAdd"
-        Write-Host "Added to system PATH: $pathToAdd"
+    if ($envPath.Remove($pathToRemove)) {
+        [Environment]::SetEnvironmentVariable("Path", $envPath, "Machine")
+        Write-Host "Removed the following path from enviroment variable PATH: $pathToAdd"
     } else {
-        Write-Host "Directory already exists in system PATH."
+        return Write-Error "The provided path does not exist in $(if($Target -eq "User"){"the current User"} else{"system"}) PATH"
     }
   }
   
-  if(-not $pathToAdd) {
-    Write-Error "No Path to add was provided"
-    exit 1
+  if($Command -and $Path){
+    return Write-Error "Must only provide one paramter: either command or path" 
   }
+  
+  [string]$pathToRemove = ""
+
+  if($Command){
+    try{
+      $CommandSource = (Get-Command $Command -ErrorActions Stop).Source -split "\\"
+    }
+    catch{
+      return Write-Error "No command "$Command" was found"
+    }
+    $pathToRemove = $CommandSource[0 .. ($CommandSource.Count - 2)] -join "\"
+  }
+
+  else if($Path){
+    if($Path -match ".exe") {
+      $CommandSource = $Path -split "\\"
+      $pathToRemove = $CommandSource[0 .. ($CommandSource.Count - 2)] -join "\"
+     }
+    else {
+      $pathToRemove = $Path
+    }
+
+  }
+
+  else{
+    return Write-Error "No command or path was provided to remove"
+  }
+
 
   if($AllUsers){
-   return addForAllUsers 
+    Write-Host -Foreground "Yellow" "Attempting to remove path for All Users..."
+    return RemoveFromPath -PathToRemove $pathToRemove -Target "Machine"
   }
 
-  return addForCurrentUser
+  Write-Host -Foreground "Yellow" "Attempting to remove path for current User only..."
+  return RemoveFromPath -PathToRemove $pathToRemove -Target "User"
 }
 
