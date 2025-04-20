@@ -6,11 +6,13 @@
 .PARAMETER AllUser
   turn this on to add path to system enviroment variable
 
+#>
 
-function Start-AddToPath {
+function Start-RemoveFromPath {
   param(
-  [string][Alias('p')] $pathToAdd, 
-  [switch][Alias('au')] $AllUser
+  [string][Alias('p')] $Path, 
+  [string][Alias('c')] $Command
+  [switch][Alias('au')] $AllUsers
   )
 
   function addForCurrentUser {
@@ -59,10 +61,10 @@ function Start-AddToPath {
     exit 1
   }
 
-  if($AllUser){
+  if($AllUsers){
    return addForAllUsers 
   }
 
   return addForCurrentUser
 }
-#>
+
