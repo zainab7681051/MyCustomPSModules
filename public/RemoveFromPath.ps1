@@ -1,47 +1,44 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.AUTHOR https://github.com/zainab7681051
+.PROJECTURI https://github.com/zainab7681051/MyCustomPSModules
+.TAGS powershell-modules modules custom-modules commandline cli powershell
+#>
+
 using namespace System.Collections.Generic
 using namespace Security.Principal 
 
+<#
+.SYNOPSIS
+  Invoke-RemoveFromPath - removes path from enviroment variable
+
+.DESCRIPTION
+  Remove the provided path from the current User enviroment Path variable or the system variable 
+
+.PARAMETER Path
+  The path to remove from the enviroment variable
+
+.PARAMETER Command
+  The command to remove its path from the enviroment variable
+
+.PARAMETER AllUser
+  Turn this on to remove the path from enviroment variable for all users
+
+.INPUTS
+  None
+
+.OUTPUTS
+  None
+
+.NOTES
+  Version: 1.0.0
+  Author: https://github.com/zainab7681051
+
+.Link
+ https://github.com/zainab7681051/MyCustomPSModules
+#>
+
 function Invoke-RemoveFromPath {
-  <#PSScriptInfo
-  .VERSION 1.0.0
-  .AUTHOR https://github.com/zainab7681051
-  .PROJECTURI https://github.com/zainab7681051/MyCustomPSModules
-  .TAGS powershell-modules modules custom-modules commandline cli powershell
-  #>
-  
-  <#
-  .NAME
-    Invoke-RemoveFromPath
-
-  .SYNOPSIS
-    Invoke-RemoveFromPath - removes path from enviroment variable
-  
-  .DESCRIPTION
-    Remove the provided path from the current User enviroment Path variable or the system variable 
-  
-  .PARAMETER Path
-    The path to remove from the enviroment variable
-  
-  .PARAMETER Command
-    The command to remove its path from the enviroment variable
-  
-  .PARAMETER AllUser
-    Turn this on to remove the path from enviroment variable for all users
-  
-  .INPUTS
-    None
-  
-  .OUTPUTS
-    None
-  
-  .NOTES
-    Version: 1.0.0
-    Author: https://github.com/zainab7681051
-  
-  .Link
-   https://github.com/zainab7681051/MyCustomPSModules
-  #>
-
   [CmdletBinding(SupportsShouldProcess)]
   param(
   [string][Alias('p')] $Path, 

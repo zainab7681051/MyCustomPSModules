@@ -1,44 +1,40 @@
+<#PSScriptInfo
+.VERSION 1.0.0
+.AUTHOR https://github.com/zainab7681051
+.PROJECTURI https://github.com/zainab7681051/MyCustomPSModules
+.TAGS powershell-modules modules custom-modules commandline cli powershell
+#>
+
 using namespace System.Collections.Generic
 using namespace Security.Principal 
 
+<#
+.SYNOPSIS
+  Invoke-AddToPath - adds path to enviroment variable
+
+.DESCRIPTION
+  Adds the provided path to the current User enviroment Path variable or the system variable 
+
+.PARAMETER Path
+  The path to add to the enviroment variable
+
+.PARAMETER AllUser
+  Turn this on to add path to the system enviroment variable for all users
+
+.INPUTS
+  None
+
+.OUTPUTS
+  None
+
+.NOTES
+  Version: 1.0.0
+  Author: https://github.com/zainab7681051
+
+.LINK
+ https://github.com/zainab7681051/MyCustomPSModules
+#>
 function Invoke-AddToPath {
-  <#PSScriptInfo
-  .VERSION 1.0.0
-  .AUTHOR https://github.com/zainab7681051
-  .PROJECTURI https://github.com/zainab7681051/MyCustomPSModules
-  .TAGS powershell-modules modules custom-modules commandline cli powershell
-  #>
-
-  <#
-  .NAME 
-    Invoke-AddToPath
-
-  .SYNOPSIS
-    Invoke-AddToPath - adds path to enviroment variable
-  
-  .DESCRIPTION
-    Adds the provided path to the current User enviroment Path variable or the system variable 
-  
-  .PARAMETER Path
-    The path to add to the enviroment variable
-  
-  .PARAMETER AllUser
-    Turn this on to add path to the system enviroment variable for all users
-  
-  .INPUTS
-    None
-  
-  .OUTPUTS
-    None
-  
-  .NOTES
-    Version: 1.0.0
-    Author: https://github.com/zainab7681051
-  
-  .LINK
-   https://github.com/zainab7681051/MyCustomPSModules
-  #>
-
   [CmdletBinding(SupportsShouldProcess)]
   param(
   [string][Alias('p')] $Path, 
