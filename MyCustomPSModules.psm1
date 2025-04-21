@@ -10,3 +10,7 @@ foreach ($file in $publicFunctions) {
 
 # EXPORTING ALL PUBLIC FUNCTIONS
 Export-ModuleMember -Function $publicFunctions.BaseName
+
+function List-MyCustomModules{
+
+}
