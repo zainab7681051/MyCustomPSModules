@@ -6,10 +6,16 @@ clone this repo in one of the directory paths in $env:PSModulePath
 ```powershell
     git clone https://github.com/zainab7681051/MyCustomPSModules
 ```
-
-# usage
-Modules can be used in the format of "Start-<ModuleScript-Name>" 
+if you clone this repo anywhere else you must import the module file manually in order to use the custom functions
 ```powershell
-    Start-AddToPath path\to\program\dir -AllUsers
+    Import-Module .\MyCustomPSModules.psm1
 ```
-
+# usage
+Modules can be used in the format of "Invoke-<ModuleScriptName>" 
+```powershell
+    Invoke-AddToPath path\to\program\dir -AllUsers
+```
+To see which module functions are available use the following command:
+```powershell
+    Get-MyCustomModules
+```

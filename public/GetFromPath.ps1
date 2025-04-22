@@ -20,9 +20,9 @@
   https://github.com/zainab7681051/MyCustomPSModules
 #>
 
-function Start-GetFromPath{
+function Invoke-GetFromPath{
 
   [CmdletBinding()]
   param([string]$Command)
-  Write-Error "Start-GetFromPath has nothing to do, for now..."
+  Write-Error "Invoke-GetFromPath has nothing to do, for now..."
 }

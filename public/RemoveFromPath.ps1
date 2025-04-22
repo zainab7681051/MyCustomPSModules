@@ -6,8 +6,6 @@
 #>
 
 using namespace System.Collections.Generic
-using namespace Security.Principal 
-
 <#
 .SYNOPSIS
   Invoke-RemoveFromPath - removes path from enviroment variable
@@ -37,7 +35,6 @@ using namespace Security.Principal
 .Link
  https://github.com/zainab7681051/MyCustomPSModules
 #>
-
 function Invoke-RemoveFromPath {
   [CmdletBinding(SupportsShouldProcess)]
   param(
@@ -46,9 +43,9 @@ function Invoke-RemoveFromPath {
   [switch][Alias('au')] $AllUsers
   )
 
-  $identity = [WindowsIdentity]::GetCurrent()
-  $principal = [WindowsPrincipal] $identity
-  $adminRole = [WindowsBuiltInRole]::Administrator
+  $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+  $principal = [Security.Principal.WindowsPrincipal] $identity
+  $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
 
   if (-not ($principal.IsInRole($adminRole))) {
       return Write-Error "Must run this script as Administrator."
@@ -61,7 +58,7 @@ function Invoke-RemoveFromPath {
     )
 
     [List[string]] $envPath = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
-    
+
     if ($envPath.Remove($PathToRemove)) {
         [Environment]::SetEnvironmentVariable("Path", $($envPath -join ';'), $Target)
 

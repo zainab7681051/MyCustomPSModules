@@ -6,8 +6,6 @@
 #>
 
 using namespace System.Collections.Generic
-using namespace Security.Principal 
-
 <#
 .SYNOPSIS
   Invoke-AddToPath - adds path to enviroment variable
@@ -47,9 +45,9 @@ function Invoke-AddToPath {
     )
 
     if($Target -eq "Machine"){
-      $identity = [WindowsIdentity]::GetCurrent()
-      $principal = [WindowsPrincipal] $identity
-      $adminRole = [WindowsBuiltInRole]::Administrator
+      $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+      $principal = [Security.Principal.WindowsPrincipal] $identity
+      $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
 
       if (-not ($principal.IsInRole($adminRole))) {
           return Write-Error "Must run this script as Administrator to modify the system PATH."
@@ -59,7 +57,7 @@ function Invoke-AddToPath {
    [List[string]] $envPAth = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
     
     if ($envPAth -cnotcontains $Path) {
-        $envPAth.Add($Path)
+        $envPAth.Add($Path) | Out-Null
         
         [Environment]::SetEnvironmentVariable("Path", ($envPath -join ';'), $Target)
         
