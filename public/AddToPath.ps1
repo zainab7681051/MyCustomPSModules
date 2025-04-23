@@ -40,19 +40,7 @@ function Invoke-AddToPath {
   )
 
   function AddToPath{
-    param(
-    [string] $Target
-    )
-
-    if($Target -eq "Machine"){
-      $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-      $principal = [Security.Principal.WindowsPrincipal] $identity
-      $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
-
-      if (-not ($principal.IsInRole($adminRole))) {
-          return Write-Error "Must run this script as Administrator to modify the system PATH."
-      }
-    }
+    param([string] $Target)
 
    [List[string]] $envPAth = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
     
@@ -63,7 +51,7 @@ function Invoke-AddToPath {
         
         # UPDATE FOR CURRENT POWERSHELL SESSION
         $env:Path += ";$Path"
-        Write-Host -Foreground "Green" "Added the following path from enviroment variable PATH: $Path"
+        Write-Host -Foreground "Green" "Added the following path to enviroment variable PATH: $Path"
     } else {
         Write-Error "The provided path already exists in the $(if($Target -eq "User"){"current User"} else{"system"}) PATH."
     }
@@ -74,6 +62,14 @@ function Invoke-AddToPath {
   }
 
   if($AllUser){
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = [Security.Principal.WindowsPrincipal] $identity
+    $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
+
+    if (-not ($principal.IsInRole($adminRole))) {
+        return Write-Error "Must run this script as Administrator to modify the system PATH."
+    }
+
     Write-Host -Foreground "Yellow" "Attemping to add to system enviroment variable for all users..."
     return AddToPath -Target "Machine"
   }

@@ -101,7 +101,7 @@ function Invoke-RemoveFromPath {
     return RemoveFromPath -PathToRemove $pathToRemove -Target "Machine"
   }
 
-  Write-Host -Foreground "Yellow" "Attempting to remove path fUserent User only..."
+  Write-Host -Foreground "Yellow" "Attempting to remove path for current User only..."
   return RemoveFromPath -PathToRemove $pathToRemove -Target "User"
 }
 
