@@ -8,12 +8,13 @@ using namespace System.Collections.Generic
 
 # getting all public ps1 scripts from public dir
 function GetAllPublicScripts{
-  try{
-    $publicScripts = @(Get-ChildItem -Path ".\public" -Filter *.ps1 -Recurse -ErrorAction Stop)
+    $publicScripts = @(Get-ChildItem -Path ".\public" -Filter *.ps1 -Recurse -ErrorAction SilentlyContinue)
+
+    if(-not $publicScripts){
+      Write-Host -ForegroundColor "Red" "[Error] Error Occured when getting public scripts from Public directory: $_"
+    }
+
     return $publicScripts
-  } catch {
-    Write-Host -ForegroundColor "Red" "[Error] Error Occured when getting public scripts from Public directory: $_"
-  }
 }
 
 <#
@@ -38,17 +39,14 @@ function Get-MyCustomModules {
 
   foreach ($file in $Files.BaseName) {
     $commandName = "Invoke-$($file)"
-    
-    try {
-      Write-Host -ForegroundColor "Green" -NoNewline "  ✔ [$commandName]" 
-      Write-Host  -ForegroundColor "DarkGray" " - Ready to use"
-      $validCount++
-    }
-    catch {
+    if(-not (Get-Command $commandName -ErrorAction SilentlyContinue)){
       Write-Host -ForegroundColor "Red" -NoNewline "  ✖ [$commandName]" 
       Write-Host -ForegroundColor "DarkGray" " - Not properly installed" 
       $missingCount++
     }
+    Write-Host -ForegroundColor "Green" -NoNewline "  ✔ [$commandName]" 
+    Write-Host  -ForegroundColor "DarkGray" " - Ready to use"
+    $validCount++
   }
 
   Write-Host -ForegroundColor "Cyan" "`n=== Summary ===" 
@@ -60,7 +58,7 @@ function Get-MyCustomModules {
     Write-Host -ForegroundColor "Yellow" "`n⚠ Some modules failed to load. Check installation and try again." 
   }
   
-  Write-Host -ForegroundColor "DarkCyan" "`nUse 'List-MyCustomModules' to see available commands at any time`n" 
+  Write-Host -ForegroundColor "DarkCyan" "`nUse the 'help' or 'Get-Help' command for more info on each module`n" 
 }
 
 Export-ModuleMember -Function Get-MyCustomModules

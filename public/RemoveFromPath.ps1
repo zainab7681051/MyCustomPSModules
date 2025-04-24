@@ -80,12 +80,12 @@ function Invoke-RemoveFromPath {
   [string] $pathToRemove = ""
 
   if($Command){
-    try{
-      $CommandSource = (Get-Command $Command -ErrorActions Stop).Source -split "\\"
-    }
-    catch{
-      return Write-Host -Foreground "Red" "No command "$Command" was found"
-    }
+      $CommandSource = (Get-Command $Command -ErrorAction SilentlyContinue).Source -split "\\"
+      if(-not $CommandSource)
+      {
+        return Write-Host -Foreground "Red" "No command "$Command" was found"
+      }
+
     $pathToRemove = $CommandSource[0 .. ($CommandSource.Count - 2)] -join "\"
   }
   elseif($Path){
@@ -102,11 +102,11 @@ function Invoke-RemoveFromPath {
   }
 
   if($AllUsers){
-    Write-Host -Foreground "Yellow" "Attempting to remove path for All Users..."
+    Write-Host -Foreground "Yellow" "[Warning] Attempting to remove path for All Users...`n"
     return RemoveFromPath -PathToRemove $pathToRemove -Target "Machine"
   }
 
-  Write-Host -Foreground "Yellow" "Attempting to remove path for current User only..."
+  Write-Host -Foreground "Yellow" "[Warning] Attempting to remove path for current User only...`n"
   return RemoveFromPath -PathToRemove $pathToRemove -Target "User"
 }
 
