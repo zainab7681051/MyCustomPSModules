@@ -54,14 +54,15 @@ function Invoke-AddToPath {
         
         # update for current powershell session
         $env:Path += ";$PathToAdd"
-        Write-Host -Foreground "Green" "Added the following path to enviroment variable PATH: $PathToAdd"
+        Write-Host -Foreground "Green" "[Success] Added the following path to enviroment variable PATH:"
+        Write-Host $PathToAdd
     } else {
-        Write-Error "The provided path already exists in the $(if($Target -eq "User"){"current User"} else{"system"}) PATH."
+        Write-Host -Foreground "Red" "[Error] The provided path already exists in the $(if($Target -eq "User"){"current User"} else{"system"}) PATH."
     }
   }
   
-  if(-not $Path) {
-    return Write-Error "No Path was provided to add"
+  if(-not $Path) { 
+    return Write-Host -Foreground "Red" "[Error] No Path was provided to add"
   }
   
   # cleaning the path by removing the leaf and extracting the parent directory
@@ -81,15 +82,17 @@ function Invoke-AddToPath {
     $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
 
     if (-not ($principal.IsInRole($adminRole))) {
-        return Write-Error "Must run this script as Administrator to modify the system PATH."
+        return Write-Host -Foreground "Red" "[Error] Must run this Command as Administrator to modify the system PATH."
     }
 
-    Write-Host -Foreground "Yellow" "Attemping to add to system enviroment variable for all users..."
-    return AddToPath -PathToAdd $pathToAdd -Target "Machine"
+    Write-Host -Foreground "Yellow" "[Warning] Attemping to add to system enviroment variable for all users..."
+    AddToPath -PathToAdd $pathToAdd -Target "Machine"
+    return
   }
   
   # adding path for current user by default
-  Write-Host -Foreground "Yellow" "Attemping to add to user enviroment variable for the current user..."
-  return AddToPath -PathToAdd $pathToAdd -Target "User"
+  Write-Host -Foreground "Yellow" "[Warning] Attemping to add to user enviroment variable for the current user..."
+  AddToPath -PathToAdd $pathToAdd -Target "User"
+  return
 }
 

@@ -7,12 +7,12 @@
 using namespace System.Collections.Generic
 
 # getting all public ps1 scripts from public dir
-function Get-AllPublicScripts{
+function GetAllPublicScripts{
   try{
     $publicScripts = @(Get-ChildItem -Path ".\public" -Filter *.ps1 -Recurse -ErrorAction Stop)
     return $publicScripts
   } catch {
-    Write-Error "Error Occured when getting public scripts from Public directory: $_"
+    Write-Host -ForegroundColor "Red" "[Error] Error Occured when getting public scripts from Public directory: $_"
   }
 }
 
@@ -28,10 +28,10 @@ function Get-AllPublicScripts{
   https://github.com/zainab7681051/MyCustomPSModules
 #>
 function Get-MyCustomModules {
-  $Files = Get-AllPublicScripts
+  $Files = GetAllPublicScripts
   
-  Write-Host "`n=== Available Custom Commands ===" -ForegroundColor Cyan
-  Write-Host "Scanning installed modules..." -ForegroundColor DarkGray
+  Write-Host -ForegroundColor "Cyan" "`n=== Available Custom Commands ===" 
+  Write-Host -ForegroundColor "DarkGray" "Scanning installed modules..." 
   
   $validCount = 0
   $missingCount = 0
@@ -40,32 +40,33 @@ function Get-MyCustomModules {
     $commandName = "Invoke-$($file)"
     
     try {
-      Write-Host "  ✔ [$commandName]" -ForegroundColor Green -NoNewline
-      Write-Host " - Ready to use" -ForegroundColor DarkGray
+      Write-Host -ForegroundColor "Green" -NoNewline "  ✔ [$commandName]" 
+      Write-Host  -ForegroundColor "DarkGray" " - Ready to use"
       $validCount++
     }
     catch {
-      Write-Host "  ✖ [$commandName]" -ForegroundColor Red -NoNewline
-      Write-Host " - Not properly installed" -ForegroundColor DarkGray
+      Write-Host -ForegroundColor "Red" -NoNewline "  ✖ [$commandName]" 
+      Write-Host -ForegroundColor "DarkGray" " - Not properly installed" 
       $missingCount++
     }
   }
 
-  Write-Host "`n=== Summary ===" -ForegroundColor Cyan
-  Write-Host ("  Total Modules: {0}" -f $Files.Count) -ForegroundColor Yellow
-  Write-Host ("  Available:     {0}" -f $validCount) -ForegroundColor Green
-  Write-Host ("  Missing:       {0}" -f $missingCount) -ForegroundColor Red
+  Write-Host -ForegroundColor "Cyan" "`n=== Summary ===" 
+  Write-Host -ForegroundColor "Yellow" ("  Total Modules: {0}" -f $Files.Count)   
+  Write-Host -ForegroundColor "Green" ("  Available:     {0}" -f $validCount) 
+  Write-Host -ForegroundColor "Red" ("  Missing:       {0}" -f $missingCount) 
   
   if ($missingCount -gt 0) {
-    Write-Host "`n⚠ Some modules failed to load. Check installation and try again." -ForegroundColor Yellow
+    Write-Host -ForegroundColor "Yellow" "`n⚠ Some modules failed to load. Check installation and try again." 
   }
   
-  Write-Host "`nUse 'List-MyCustomModules' to see available commands at any time`n" -ForegroundColor DarkCyan
+  Write-Host -ForegroundColor "DarkCyan" "`nUse 'List-MyCustomModules' to see available commands at any time`n" 
 }
+
 Export-ModuleMember -Function Get-MyCustomModules
 
 
-$Files = Get-AllPublicScripts
+$Files = GetAllPublicScripts
 
 foreach ($file in $Files.FullName) {
   try {
@@ -80,9 +81,9 @@ foreach ($file in $Files.FullName) {
       Export-ModuleMember -Function "Invoke-$($fileName[0])" -ErrorAction Stop
     }
     catch {
-      Write-Error "Failed to import script file $([System.IO.Path]::GetFileName($file)): $_"
+      Write-Host -ForegroundColor "Red" "[Error] Failed to import script file $([System.IO.Path]::GetFileName($file)): $_"
     }
   } catch {
-    Write-Error "Failed to import script file $([System.IO.Path]::GetFileName($file)): $_"
+    Write-Host -ForegroundColor "Red" "[Error] Failed to import script file $([System.IO.Path]::GetFileName($file)): $_"
   }
 }

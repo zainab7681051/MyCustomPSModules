@@ -48,7 +48,7 @@ function Invoke-RemoveFromPath {
   $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
 
   if (-not ($principal.IsInRole($adminRole))) {
-      return Write-Error "Must run this script as Administrator."
+      return Write-Host -Foreground "Red" "Must run this script as Administrator."
   }
 
   function RemoveFromPath{
@@ -61,15 +61,20 @@ function Invoke-RemoveFromPath {
 
     if ($envPath.Remove($PathToRemove)) {
         [Environment]::SetEnvironmentVariable("Path", $($envPath -join ';'), $Target)
+        
+        # update for current powershell session
+        $env:Path = $envPath -join ';'
 
-        Write-Host -Foreground "Green" "Removed the following path from enviroment variable PATH: $PathToRemove"
+        Write-Host -Foreground "Green" "[Success] Removed the following path from enviroment variable PATH:" 
+        Write-Host $PathToRemove
     } else {
-        Write-Error "The provided path does not exist in $(if($Target -eq "User"){"the current User"} else{"system"}) PATH"
+        Write-Host -Foreground "Red" "[Error] The provided path does not exist in $(if($Target -eq "User"){"the current User"} else{"system"}) PATH"
     }
   }
   
   if($Command -and $Path){
-    return Write-Error "Must only provide one paramter: either command or path" 
+    Write-Host -Foreground "Red" "[Error] Must only provide one paramter: either command or path" 
+    return
   }
   
   [string] $pathToRemove = ""
@@ -79,7 +84,7 @@ function Invoke-RemoveFromPath {
       $CommandSource = (Get-Command $Command -ErrorActions Stop).Source -split "\\"
     }
     catch{
-      return Write-Error "No command "$Command" was found"
+      return Write-Host -Foreground "Red" "No command "$Command" was found"
     }
     $pathToRemove = $CommandSource[0 .. ($CommandSource.Count - 2)] -join "\"
   }
@@ -93,7 +98,7 @@ function Invoke-RemoveFromPath {
     }
   }
   else{
-    return Write-Error "No command or path was provided to remove"
+    return Write-Host -Foreground "Red" "No command or path was provided to remove"
   }
 
   if($AllUsers){
