@@ -11,7 +11,7 @@ using namespace System.Collections.Generic
   Invoke-RemoveFromPath - removes path from enviroment variable
 
 .DESCRIPTION
-  Remove the provided path from the current User enviroment Path variable or the system variable 
+  Removes the provided path from the current User enviroment Path variable or the system variable and updates the "$env:Path" for the current powershell session 
 
 .PARAMETER Path
   The path to remove from the enviroment variable

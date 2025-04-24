@@ -11,7 +11,7 @@ using namespace System.Collections.Generic
   Invoke-AddToPath - adds path to enviroment variable
 
 .DESCRIPTION
-  Adds the provided path to the current User enviroment Path variable or the system variable 
+  Adds the provided path to the current User enviroment Path variable or the system variable and updates the "$env:Path" for the current powershell session which means you can use the command that was recently added without reloading powershell or opening a new terminal window
 
 .PARAMETER Path
   The path to add to the enviroment variable
@@ -65,7 +65,7 @@ function Invoke-AddToPath {
     return Write-Host -Foreground "Red" "[Error] No Path was provided to add"
   }
   
-  # cleaning the path by removing the leaf and extracting the parent directory
+  # cleaning the path by removing the leaf and extracting the root 
   [string] $pathToAdd=""
   if($Path -cmatch ".exe") {
     $parentDir = $Path -split "\\"
