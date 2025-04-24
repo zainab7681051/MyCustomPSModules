@@ -52,7 +52,7 @@ function Invoke-AddToPath {
         
         [Environment]::SetEnvironmentVariable("Path", ($envPath -join ';'), $Target)
         
-        # UPDATE FOR CURRENT POWERSHELL SESSION
+        # update for current powershell session
         $env:Path += ";$PathToAdd"
         Write-Host -Foreground "Green" "Added the following path to enviroment variable PATH: $PathToAdd"
     } else {
@@ -64,6 +64,7 @@ function Invoke-AddToPath {
     return Write-Error "No Path was provided to add"
   }
   
+  # cleaning the path by removing the leaf and extracting the parent directory
   [string] $pathToAdd=""
   if($Path -cmatch ".exe") {
     $parentDir = $Path -split "\\"
@@ -74,6 +75,7 @@ function Invoke-AddToPath {
   }
 
   if($AllUser){
+    #checking for admin privliges
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = [Security.Principal.WindowsPrincipal] $identity
     $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
@@ -82,11 +84,11 @@ function Invoke-AddToPath {
         return Write-Error "Must run this script as Administrator to modify the system PATH."
     }
 
-
     Write-Host -Foreground "Yellow" "Attemping to add to system enviroment variable for all users..."
     return AddToPath -PathToAdd $pathToAdd -Target "Machine"
   }
-
+  
+  # adding path for current user by default
   Write-Host -Foreground "Yellow" "Attemping to add to user enviroment variable for the current user..."
   return AddToPath -PathToAdd $pathToAdd -Target "User"
 }
