@@ -40,18 +40,21 @@ function Invoke-AddToPath {
   )
 
   function AddToPath{
-    param([string] $Target)
+    param(
+    [string] $PathToAdd,
+    [string] $Target
+    )
 
    [List[string]] $envPAth = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
     
-    if ($envPAth -cnotcontains $Path) {
-        $envPAth.Add($Path) | Out-Null
+    if ($envPAth -cnotcontains $PathToAdd) {
+        $envPAth.Add($PathToAdd) | Out-Null
         
         [Environment]::SetEnvironmentVariable("Path", ($envPath -join ';'), $Target)
         
         # UPDATE FOR CURRENT POWERSHELL SESSION
-        $env:Path += ";$Path"
-        Write-Host -Foreground "Green" "Added the following path to enviroment variable PATH: $Path"
+        $env:Path += ";$PathToAdd"
+        Write-Host -Foreground "Green" "Added the following path to enviroment variable PATH: $PathToAdd"
     } else {
         Write-Error "The provided path already exists in the $(if($Target -eq "User"){"current User"} else{"system"}) PATH."
     }
@@ -59,6 +62,15 @@ function Invoke-AddToPath {
   
   if(-not $Path) {
     return Write-Error "No Path was provided to add"
+  }
+  
+  [string] $pathToAdd=""
+  if($Path -cmatch ".exe") {
+    $parentDir = $Path -split "\\"
+    $pathToAdd = $parentDir[0 .. ($parentDir.Count - 2)] -join "\"
+  }
+  else {
+    $pathToAdd = $Path
   }
 
   if($AllUser){
@@ -70,10 +82,12 @@ function Invoke-AddToPath {
         return Write-Error "Must run this script as Administrator to modify the system PATH."
     }
 
+
     Write-Host -Foreground "Yellow" "Attemping to add to system enviroment variable for all users..."
-    return AddToPath -Target "Machine"
+    return AddToPath -PathToAdd $pathToAdd -Target "Machine"
   }
 
   Write-Host -Foreground "Yellow" "Attemping to add to user enviroment variable for the current user..."
-  return AddToPath -Target "User"
+  return AddToPath -PathToAdd $pathToAdd -Target "User"
 }
+
