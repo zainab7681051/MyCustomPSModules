@@ -4,17 +4,59 @@
 .PROJECTURI https://github.com/zainab7681051/MyCustomPSModules
 .TAGS powershell-modules modules custom-modules commandline cli powershell
 #>
+
 using namespace System.Collections.Generic
 
 # getting all public ps1 scripts from public dir
+# returns List[string] or $null
 function GetAllPublicScripts{
-    $publicScripts = @(Get-ChildItem -Path ".\public" -Filter *.ps1 -Recurse -ErrorAction SilentlyContinue)
+  $moduleRoot = $PSScriptRoot
+  $publicDir = Join-Path -Path $moduleRoot -ChildPath 'public'
 
-    if(-not $publicScripts){
-      Write-Host -ForegroundColor "Red" "[Error] Error Occured when getting public scripts from Public directory: $_"
+  try{
+    [List[string]] $publicScripts = Get-ChildItem -Path $publicDir -Filter *.ps1 -ErrorAction Stop
+
+    if($publicScripts.Count -eq 0){
+      return Write-Host -ForegroundColor "Red" "[Error] Error Occured when getting public scripts from Public directory:`n  No powershell scripts (.ps1 files) were found"
     }
 
     return $publicScripts
+
+  } catch {
+    Write-Host -ForegroundColor "Red" "[Error] Error Occured when getting public scripts from Public directory:`n  $_"
+    return $null
+  }
+}
+
+$missingModules = [List[string]]::new() 
+$validModules = [List[string]]::new()  
+$allModules = [List[string]]::new()  
+
+[List[string]] $Files = GetAllPublicScripts
+if(-not (($null -eq $Files) -or ($Files.Count -eq 0))){
+
+  foreach ($file in $Files) {
+        
+    # extracting base filename without extension for function name generation
+    $fileName = [System.IO.Path]::GetFileName($file) -split ".ps1", 2
+    $command = "Invoke-$($fileName[0])"
+  
+    $allModules.Add($command)
+  
+    $resolvedPath = Resolve-Path -Path $file -Relative -ErrorAction SilentlyContinue
+    if(-not $resolvedPath){
+      $missingModules.Add($command) | Out-Null
+      continue
+    }
+  
+    # executing script in current scope to make its functions available
+    . $resolvedPath  # dot-sourcing brings functions into module scope
+  
+    # automatically exporting the matching invoke-* function from loaded script
+    Export-ModuleMember -Function $command 
+  
+    $validModules.Add($command) | Out-Null
+  }
 }
 
 <#
@@ -29,59 +71,34 @@ function GetAllPublicScripts{
   https://github.com/zainab7681051/MyCustomPSModules
 #>
 function Get-MyCustomModules {
-  $Files = GetAllPublicScripts
   
   Write-Host -ForegroundColor "Cyan" "`n=== Available Custom Commands ===" 
   Write-Host -ForegroundColor "DarkGray" "Scanning installed modules..." 
   
-  $validCount = 0
-  $missingCount = 0
-
-  foreach ($file in $Files.BaseName) {
-    $commandName = "Invoke-$($file)"
-    if(-not (Get-Command $commandName -ErrorAction SilentlyContinue)){
-      Write-Host -ForegroundColor "Red" -NoNewline "  ✖ [$commandName]" 
+  if($allModules.Count -eq 0){
+    return Write-Host -ForegroundColor "Red" "`n [Error] No modules are available : Make sure the directory containing the modules exist and re-import MyCustomPSModules in a new Powrshell session"
+  }
+  foreach ($mod in $allModules) {
+    if($missingModules -ccontains $mod){
+      Write-Host -ForegroundColor "Red" -NoNewline "  ✖ [$mod]" 
       Write-Host -ForegroundColor "DarkGray" " - Not properly installed" 
-      $missingCount++
     }
-    Write-Host -ForegroundColor "Green" -NoNewline "  ✔ [$commandName]" 
-    Write-Host  -ForegroundColor "DarkGray" " - Ready to use"
-    $validCount++
+    else{
+      Write-Host -ForegroundColor "Green" -NoNewline "  ✔ [$mod]" 
+      Write-Host  -ForegroundColor "DarkGray" " - Ready to use"
+    }
   }
 
   Write-Host -ForegroundColor "Cyan" "`n=== Summary ===" 
-  Write-Host -ForegroundColor "Yellow" ("  Total Modules: {0}" -f $Files.Count)   
-  Write-Host -ForegroundColor "Green" ("  Available:     {0}" -f $validCount) 
-  Write-Host -ForegroundColor "Red" ("  Missing:       {0}" -f $missingCount) 
+  Write-Host -ForegroundColor "Yellow" ("  Total Modules: {0}" -f $allModules.Count)   
+  Write-Host -ForegroundColor "Green" ("  Available:     {0}" -f $validModules.Count) 
+  Write-Host -ForegroundColor "Red" ("  Missing:       {0}" -f $missingModules.Count) 
   
-  if ($missingCount -gt 0) {
-    Write-Host -ForegroundColor "Yellow" "`n⚠ Some modules failed to load. Check installation and try again." 
+  if ($missingModules.Count -gt 0) {
+    Write-Host -ForegroundColor "Yellow" "`n [Warning] Some modules failed to load. Check installation and try again." 
   }
   
-  Write-Host -ForegroundColor "DarkCyan" "`nUse the 'help' or 'Get-Help' command for more info on each module`n" 
+  Write-Host -ForegroundColor "DarkCyan" "`n [Note] Use the 'help' or 'Get-Help' command for more info on each module`n" 
 }
 
 Export-ModuleMember -Function Get-MyCustomModules
-
-
-$Files = GetAllPublicScripts
-
-foreach ($file in $Files.FullName) {
-  try {
-    $resolvedPath = Resolve-Path -Path $file -Relative -ErrorAction Stop
-    # executing script in current scope to make its functions available
-    . $resolvedPath  # dot-sourcing brings functions into module scope
-        
-    # extracting base filename without extension for function name generation
-    $fileName = [System.IO.Path]::GetFileName($file) -split ".ps1", 2
-    try {
-      # automatically exporting the matching invoke-* function from loaded script
-      Export-ModuleMember -Function "Invoke-$($fileName[0])" -ErrorAction Stop
-    }
-    catch {
-      Write-Host -ForegroundColor "Red" "[Error] Failed to import script file $([System.IO.Path]::GetFileName($file)): $_"
-    }
-  } catch {
-    Write-Host -ForegroundColor "Red" "[Error] Failed to import script file $([System.IO.Path]::GetFileName($file)): $_"
-  }
-}
