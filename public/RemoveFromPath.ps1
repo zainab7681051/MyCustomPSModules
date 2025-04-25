@@ -42,36 +42,7 @@ function Invoke-RemoveFromPath {
   [string][Alias('c')] $Command,
   [switch][Alias('au')] $AllUsers
   )
-
-  $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-  $principal = [Security.Principal.WindowsPrincipal] $identity
-  $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
-
-  if (-not ($principal.IsInRole($adminRole))) {
-      return Write-Host -Foreground "Red" "Must run this script as Administrator."
-  }
-
-  function RemoveFromPath{
-    param(
-    [string] $PathToRemove,
-    [string] $Target
-    )
-
-    [List[string]] $envPath = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
-
-    if ($envPath.Remove($PathToRemove)) {
-        [Environment]::SetEnvironmentVariable("Path", $($envPath -join ';'), $Target)
-        
-        # update for current powershell session
-        $env:Path = $envPath -join ';'
-
-        Write-Host -Foreground "Green" "[Success] Removed the following path from enviroment variable PATH:" 
-        Write-Host $PathToRemove
-    } else {
-        Write-Host -Foreground "Red" "[Error] The provided path does not exist in $(if($Target -eq "User"){"the current User"} else{"system"}) PATH"
-    }
-  }
-  
+ 
   if($Command -and $Path){
     Write-Host -Foreground "Red" "[Error] Must only provide one paramter: either command or path" 
     return
@@ -100,13 +71,35 @@ function Invoke-RemoveFromPath {
   else{
     return Write-Host -Foreground "Red" "No command or path was provided to remove"
   }
-
+  
+  $Target = "User"
   if($AllUsers){
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = [Security.Principal.WindowsPrincipal] $identity
+    $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
+
+    if (-not ($principal.IsInRole($adminRole))) {
+        return Write-Host -Foreground "Red" "Must run this command as Administrator."
+    }
+
     Write-Host -Foreground "Yellow" "[Warning] Attempting to remove path for All Users...`n"
-    return RemoveFromPath -PathToRemove $pathToRemove -Target "Machine"
+    $Target = "Machine"
+  }
+  else {
+    Write-Host -Foreground "Yellow" "[Warning] Attempting to remove path for current User only...`n"
   }
 
-  Write-Host -Foreground "Yellow" "[Warning] Attempting to remove path for current User only...`n"
-  return RemoveFromPath -PathToRemove $pathToRemove -Target "User"
-}
+  [List[string]] $envPath = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
 
+  if ($envPath.Remove($pathToRemove)) {
+      [Environment]::SetEnvironmentVariable("Path", $($envPath -join ';'), $Target)
+      
+      # update for current powershell session
+      $env:Path = $envPath -join ';'
+
+      Write-Host -Foreground "Green" "[Success] Removed the following path from enviroment variable PATH:" 
+      Write-Host $pathToRemove
+  } else {
+      Write-Host -Foreground "Red" "[Error] The provided path does not exist in $(if($Target -eq "User"){"the current User"} else{"system"}) PATH"
+  }
+}

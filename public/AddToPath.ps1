@@ -38,28 +38,6 @@ function Invoke-AddToPath {
   [string][Alias('p')] $Path, 
   [switch][Alias('au')] $AllUser
   )
-
-  function AddToPath{
-    param(
-    [string] $PathToAdd,
-    [string] $Target
-    )
-
-   [List[string]] $envPAth = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
-    
-    if ($envPAth -cnotcontains $PathToAdd) {
-        $envPAth.Add($PathToAdd) | Out-Null
-        
-        [Environment]::SetEnvironmentVariable("Path", ($envPath -join ';'), $Target)
-        
-        # update for current powershell session
-        $env:Path += ";$PathToAdd"
-        Write-Host -Foreground "Green" "[Success] Added the following path to enviroment variable PATH:"
-        Write-Host $PathToAdd
-    } else {
-        Write-Host -Foreground "Red" "[Error] The provided path already exists in the $(if($Target -eq "User"){"current User"} else{"system"}) PATH."
-    }
-  }
   
   if(-not $Path) { 
     return Write-Host -Foreground "Red" "[Error] No Path was provided to add"
@@ -74,7 +52,8 @@ function Invoke-AddToPath {
   else {
     $pathToAdd = $Path
   }
-
+  
+  $Target = "User"
   if($AllUser){
     #checking for admin privliges
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -86,13 +65,26 @@ function Invoke-AddToPath {
     }
 
     Write-Host -Foreground "Yellow" "[Warning] Attemping to add to system enviroment variable for all users..."
-    AddToPath -PathToAdd $pathToAdd -Target "Machine"
-    return
+    $Target = "Machine"
+  } 
+  else{
+    Write-Host -Foreground "Yellow" "[Warning] Attemping to add to user enviroment variable for the current user..."
   }
   
-  # adding path for current user by default
-  Write-Host -Foreground "Yellow" "[Warning] Attemping to add to user enviroment variable for the current user..."
-  AddToPath -PathToAdd $pathToAdd -Target "User"
-  return
+    # adding path to enviroment variable
+  [List[string]] $envPAth = [Environment]::GetEnvironmentVariable("Path", $Target) -split ';'
+   
+  if ($envPAth -cnotcontains $pathToAdd) {
+    $envPAth.Add($pathToAdd) | Out-Null
+    
+    [Environment]::SetEnvironmentVariable("Path", ($envPath -join ';'), $Target)
+    
+    # update for current powershell session
+    $env:Path += ";$pathToAdd"
+    Write-Host -Foreground "Green" "[Success] Added the following path to enviroment variable PATH:"
+    Write-Host $pathToAdd
+  } else {
+     Write-Host -Foreground "Red" "[Error] The provided path already exists in the $(if($Target -eq "User"){"current User"} else{"system"}) PATH."
+    }
 }
 

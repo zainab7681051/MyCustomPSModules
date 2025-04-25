@@ -7,10 +7,13 @@
 
 <#
 .SYNOPSIS
+  Invoke-GetFromPath - gets the path from enviroment variable Path
 
 .DESCRIPTION
+  gets the path of the provided command from enviroment variable Path
 
-.PARAMETER 
+.PARAMETER Command
+  The command to get its path from the enviroment variable Path
 
 .NOTES
   Version: 1.0.0
@@ -19,7 +22,6 @@
 .Link
   https://github.com/zainab7681051/MyCustomPSModules
 #>
-
 function Invoke-GetFromPath{
 
   [CmdletBinding()]
