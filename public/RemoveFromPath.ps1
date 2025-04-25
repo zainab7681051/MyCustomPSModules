@@ -5,7 +5,9 @@
 .TAGS powershell-modules modules custom-modules commandline cli powershell
 #>
 
+
 using namespace System.Collections.Generic
+
 <#
 .SYNOPSIS
   Invoke-RemoveFromPath - removes path from enviroment variable
@@ -44,8 +46,7 @@ function Invoke-RemoveFromPath {
   )
  
   if($Command -and $Path){
-    Write-Host -Foreground "Red" "[Error] Must only provide one paramter: either command or path" 
-    return
+    return Write-Error "[Error] Must only provide one paramter: either command or path`n" 
   }
   
   [string] $pathToRemove = ""
@@ -54,7 +55,7 @@ function Invoke-RemoveFromPath {
       $CommandSource = (Get-Command $Command -ErrorAction SilentlyContinue).Source -split "\\"
       if(-not $CommandSource)
       {
-        return Write-Host -Foreground "Red" "No command "$Command" was found"
+        return Write-Error "No command "$Command" was found`n"
       }
 
     $pathToRemove = $CommandSource[0 .. ($CommandSource.Count - 2)] -join "\"
@@ -69,7 +70,7 @@ function Invoke-RemoveFromPath {
     }
   }
   else{
-    return Write-Host -Foreground "Red" "No command or path was provided to remove"
+    return Write-Error "No command or path was provided to remove`n"
   }
   
   $Target = "User"
@@ -79,7 +80,7 @@ function Invoke-RemoveFromPath {
     $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
 
     if (-not ($principal.IsInRole($adminRole))) {
-        return Write-Host -Foreground "Red" "Must run this command as Administrator."
+        return Write-Error "Must run this command as Administrator`n"
     }
 
     Write-Host -Foreground "Yellow" "[Warning] Attempting to remove path for All Users...`n"
@@ -98,8 +99,8 @@ function Invoke-RemoveFromPath {
       $env:Path = $envPath -join ';'
 
       Write-Host -Foreground "Green" "[Success] Removed the following path from enviroment variable PATH:" 
-      Write-Host $pathToRemove
+      Write-Host -Foreground "Cyan" "$pathToRemove`n"
   } else {
-      Write-Host -Foreground "Red" "[Error] The provided path does not exist in $(if($Target -eq "User"){"the current User"} else{"system"}) PATH"
+      Write-Error "[Error] The provided path does not exist in $(if($Target -eq "User"){"the current User"} else{"system"}) PATH"
   }
 }

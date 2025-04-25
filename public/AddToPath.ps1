@@ -5,7 +5,9 @@
 .TAGS powershell-modules modules custom-modules commandline cli powershell
 #>
 
+
 using namespace System.Collections.Generic
+
 <#
 .SYNOPSIS
   Invoke-AddToPath - adds path to enviroment variable
@@ -40,7 +42,7 @@ function Invoke-AddToPath {
   )
   
   if(-not $Path) { 
-    return Write-Host -Foreground "Red" "[Error] No Path was provided to add"
+    return Write-Error "[Error] No Path was provided to add"
   }
   
   # cleaning the path by removing the leaf and extracting the root 
@@ -61,7 +63,7 @@ function Invoke-AddToPath {
     $adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
 
     if (-not ($principal.IsInRole($adminRole))) {
-        return Write-Host -Foreground "Red" "[Error] Must run this Command as Administrator to modify the system PATH."
+        return Write-Error "[Error] Must run this Command as Administrator to modify the system PATH."
     }
 
     Write-Host -Foreground "Yellow" "[Warning] Attemping to add to system enviroment variable for all users..."
@@ -82,9 +84,9 @@ function Invoke-AddToPath {
     # update for current powershell session
     $env:Path += ";$pathToAdd"
     Write-Host -Foreground "Green" "[Success] Added the following path to enviroment variable PATH:"
-    Write-Host $pathToAdd
+    Write-Host -Foreground "Cyan" "$pathToAdd`n"
   } else {
-     Write-Host -Foreground "Red" "[Error] The provided path already exists in the $(if($Target -eq "User"){"current User"} else{"system"}) PATH."
+     Write-Error "[Error] The provided path already exists in the $(if($Target -eq "User"){"current User"} else{"system"}) PATH."
     }
 }
 
