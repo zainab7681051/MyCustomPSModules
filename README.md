@@ -1,26 +1,70 @@
 # MyCustomPSModules
-Collection of my custom powershell module scripts for daily use
+Collection of my custom PowerShell module scripts for daily use.
 
-# installation
-clone this repo in one of the directory paths in $env:PSModulePath
+# Installation
+Choose one of the following installation methods based on your needs:
+
+## Automatic Installation (Recommended)
+**For automatic module import in all PowerShell sessions:**  
+1. Clone this repository into one of the directories listed in your `$env:PSModulePath`.  
+   *(Check your current module paths with `$env:PSModulePath -split ';'`)*
+
 ```powershell
-# I suggest cloning this repo in "C:\Users\<your-user-name>\Documents\PowerShell\Modules"
-git clone https://github.com/zainab7681051/MyCustomPSModules
+# Example: Clone to the user-specific modules directory
+git clone https://github.com/zainab7681051/MyCustomPSModules "$HOME\Documents\PowerShell\Modules\MyCustomPSModules"
 ```
-if you clone this repo anywhere else you must enter the repo directory and import the module file manually in order to use the custom functions
+
+2. After cloning, PowerShell will automatically detect the module in future sessions. To use it immediately:  
 ```powershell
-Import-Module .\MyCustomPSModules.psm1
+Import-Module MyCustomPSModules  # Only needed once per session
 ```
-# usage
-Modules can be used in the format of "Invoke-<ModuleScriptName>" 
+
+---
+
+## Manual Installation (Advanced)
+**If you cloned the repository to a directory *not* in `$env:PSModulePath`:**  
+
+### Option 1: Manually Import Each Session
+Use the module temporarily in the current PowerShell session:
 ```powershell
-Invoke-AddToPath path\to\program\dir -AllUsers
+# Replace with the full path to your .psm1 file
+Import-Module -Path "C:\Your\Custom\Path\MyCustomPSModules\MyCustomPSModules.psm1"
 ```
-To get a list of the module functions use the following command:
+
+### Option 2: Add to PSModulePath for Auto-Import
+1. **Add your module directory to PowerShell's module search path** (replace `C:\Your\Custom\Path` with your actual path):  
+```powershell
+# Temporary (current session only):
+$env:PSModulePath += ";C:\Your\Custom\Path\MyCustomPSModules"
+
+# Permanent (add to your profile):
+[Environment]::SetEnvironmentVariable(
+  'PSModulePath',
+  "$env:PSModulePath;C:\Your\Custom\Path\MyCustomPSModules",
+  'User'
+)
+```
+
+2. **Verify and use the module:**  
+```powershell
+Import-Module MyCustomPSModules  # Load for the current session
+Get-Module MyCustomPSModules    # Confirm it's loaded
+```
+
+---
+
+# Usage
+- **Call a function:**  
+```powershell
+Invoke-AddToPath "C:\Your\Directory" -AllUsers
+```
+
+- **List all available functions:**  
 ```powershell
 Get-MyCustomModules
 ```
-Make sure to use the "Get-Help" (or just "help") to get more information on each command
+
+- **Get help for a specific function:**  
 ```powershell
-help Invoke-RemoveFromPath
+help Invoke-RemoveFromPath  # Or: Get-Help Invoke-RemoveFromPath -Detailed
 ```
