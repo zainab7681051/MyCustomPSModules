@@ -45,14 +45,18 @@ function Invoke-AddToPath {
     return Write-Error "[Error] No Path was provided to add"
   }
   
-  # cleaning the path by removing the leaf and extracting the root 
   [string] $pathToAdd=""
-  if($Path -cmatch ".exe") {
-    $parentDir = $Path -split "\\"
+  # cleaning the path 
+  $p = $Path.Trim()
+  if($p[-1] -eq "\"){
+    $p = $p[0 .. ($p.Count - 2)] -join ""
+  }
+  if($p -cmatch ".exe") {
+    $parentDir = $p -split "\\"
     $pathToAdd = $parentDir[0 .. ($parentDir.Count - 2)] -join "\"
   }
   else {
-    $pathToAdd = $Path
+    $pathToAdd = $p
   }
   
   $Target = "User"

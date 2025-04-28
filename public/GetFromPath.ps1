@@ -32,24 +32,24 @@ function Invoke-GetFromPath{
   if(-not $Command){
     return Write-Error "[Error] No Command was provided`n"
   }
+  
+  $cmnd = $Command.Trim()
+  Write-Host -Foreground "Yellow" "[Warning] Attempting to get the path of '$cmnd' `n"
 
-  Write-Host -Foreground "Yellow" "[Warning] Attempting to get the path of '$Command' `n"
-
-  $commandSource = (Get-Command $Command -ErrorAction SilentlyContinue).Source -split "\\"
+  $commandSource = (Get-Command $cmnd -ErrorAction SilentlyContinue).Source -split "\\"
   if(-not $commandSource){
-    return Write-Error "[Error] No command '$Command' was found`n"
+    return Write-Error "[Error] No command '$cmnd' was found`n"
   }
 
-  Write-Host -Foreground "Yellow" "[Warning] Checking if the path of '$Command' exists in enviroment variable Path`n"
+  Write-Host -Foreground "Yellow" "[Warning] Checking if the path of '$cmnd' exists in enviroment variable Path`n"
   $path = $commandSource[0 .. ($commandSource.Count - 2)] -join "\"
-
-  [List[string]] $userEnvPath = [Environment]::GetEnvironmentVariable("Path", "User") -split ';'
-  [List[string]] $systemEnvPath = [Environment]::GetEnvironmentVariable("Path", "Machine") -split ';'
+  
+    [List[string]] $userEnvPath = [Environment]::GetEnvironmentVariable("Path", "User") -split ';'
 
   if($userEnvPath -ccontains $path){
     Write-Host -Foreground "Green" "[Success] the provided command exists in User enviroment variable Path"
     Write-Host -Foreground "Cyan" -NoNewline "Command: "
-    Write-Host $Command
+    Write-Host $cmnd
     Write-Host -Foreground "Cyan" -NoNewline "Path [User]: "
     Write-Host $path
     Write-Host 
@@ -57,7 +57,7 @@ function Invoke-GetFromPath{
   }
   Write-Host -Foreground "Green" "[Success] the provided command exists in System enviroment variable Path"
   Write-Host -Foreground "Cyan" -NoNewline "Command: "
-  Write-Host $Command
+  Write-Host $cmnd
   Write-Host -Foreground "Cyan" -NoNewline "Path [System]: "
   Write-Host $path
   Write-Host

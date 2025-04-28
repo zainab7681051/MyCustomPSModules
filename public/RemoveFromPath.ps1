@@ -52,21 +52,28 @@ function Invoke-RemoveFromPath {
   [string] $pathToRemove = ""
 
   if($Command){
-      $CommandSource = (Get-Command $Command -ErrorAction SilentlyContinue).Source -split "\\"
+    $cmnd = $Command.Trim()
+      $CommandSource = (Get-Command $cmnd -ErrorAction SilentlyContinue).Source -split "\\"
       if(-not $CommandSource)
       {
-        return Write-Error "No command "$Command" was found`n"
+        return Write-Error "No command "$cmnd" was found`n"
       }
 
     $pathToRemove = $CommandSource[0 .. ($CommandSource.Count - 2)] -join "\"
   }
   elseif($Path){
-    if($Path -cmatch ".exe") {
-      $CommandSource = $Path -split "\\"
+    $p = $Path.Trim()
+
+    if($p[-1] -eq "\"){
+        $p = $p[0 .. ($p.Count - 2)] -join ""
+      }
+
+    if($p -cmatch ".exe") {
+      $CommandSource = $p -split "\\"
       $pathToRemove = $CommandSource[0 .. ($CommandSource.Count - 2)] -join "\"
      }
     else {
-      $pathToRemove = $Path
+      $pathToRemove = $p
     }
   }
   else{
